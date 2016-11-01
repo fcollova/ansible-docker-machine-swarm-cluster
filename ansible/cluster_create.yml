@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  vars_files:
+    - hosts/server_list.yml
+  roles:
+    - collect_information
+
+
+- hosts: cluster
+  vars_files:
+    - hosts/server_list.yml
+  sudo: yes
+  roles:
+    - cluster_create

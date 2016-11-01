@@ -1,59 +1,47 @@
+---
+
+- name: Install docker dependencies
+  apt: pkg={{ item }} state=installed
+  with_items:
+    - ca-certificates
+    - apt-transport-https
+  become: true
+  tags: [docker]
+
 - name: Debian add Docker repository and update apt cache
   apt_repository:
-    repo: deb https://apt.dockerproject.org/repo ubuntu-{{ debian_version }} main
+    repo: deb https://apt.dockerproject.org/repo ubuntu-trusty main
     update_cache: yes
     state: present
+  become: true
   tags: [docker]
 
-# - name: Linus Image extra is present
-#   apt:
-#     name: linux-image-extra-$(uname -r)
-#     state: latest
-#     force: yes
-#   tags: [docker]
-#
-# - name: Apparmor is present
-#   apt:
-#     name: apparmor
-#     state: latest
-#     force: yes
-#   tags: [docker]
-
-- name: Debian Docker is present
+- name: Install docker
   apt:
-    name: docker-engine
-    state: latest
-    force: yes
+   pkg: docker-engine
+   state: latest
+   force: yes
+  become: true
   tags: [docker]
 
-- name: Debian python-pip is present
-  apt: name=python-pip state=present
-  tags: [docker]
+#F.C. Add docker user to SUDO
 
-- name: Debian docker-py is present
-  pip:
-    name: docker-py
-    version: 1.6.0
-    state: present
-  tags: [docker]
-
-- name: Debian files are present
-  template:
-    src: "{{ docker_cfg }}"
-    dest: "{{ docker_cfg_dest }}"
-  register: copy_result
-  tags: [docker]
-
-- name: vagrant user is added to the docker group
+- name: Add vagrant user to the docker group
   user:
     name: vagrant
     group: docker
   register: user_result
+  become: true
   tags: [docker]
 
-- name: Debian Docker service is restarted
-  service:
-    name: docker
-    state: restarted
-  when: copy_result|changed or user_result|changed
+- name: Add docker default file
+  template: src=templates/docker_defaults.j2 dest=/etc/default/docker mode=0644 owner=root group=root
+  notify:
+  - Restart docker
+  - Wait for docker port
+  become: true
   tags: [docker]
+
+#- name: Wait for docker to come up
+#s  wait_for: port=8000 delay=10
+

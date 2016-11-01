@@ -14,6 +14,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       v.memory = 2048
     end
     # d.vm.provision :shell, path: "bootstrap_ansible.sh"
+
+  config.vm.provider :virtualbox do |v|
+    #F.C. added Nat DNS resolver 
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    end
   end
   (1..2).each do |i|
     config.vm.define "swarm-node-#{i}" do |d|

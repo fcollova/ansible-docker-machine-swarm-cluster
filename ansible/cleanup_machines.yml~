@@ -3,5 +3,5 @@
     - name: Cleaning up old docker machines ...
       shell: docker-machine rm -y $(docker-machine ls -q)
 
-    - name: Delete Key
+    - name Delete Key
       shell: rm -R /home/francesco/.docker/machine/*
